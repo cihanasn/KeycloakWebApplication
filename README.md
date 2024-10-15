@@ -1,5 +1,7 @@
 # KeycloakWebApplication - ASP.NET Core Web API
 
+NuGet Package : Keycloak.AuthServices.Authentication
+
 ## Referanslar
 
 Assign roles to myclient	>	realm-management	realm-admin		role_realm-admin
