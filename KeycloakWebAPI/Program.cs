@@ -39,6 +39,8 @@ builder.Services.Configure<KeycloakConfiguration>(builder.Configuration.GetSecti
 
 builder.Services.AddScoped<KeycloakService>();
 
+builder.Services.AddControllers();
+
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 
@@ -64,5 +66,7 @@ app.MapGet("/hello-world", () =>
     return "Hello World";
 })
 .RequireAuthorization(); // Yetkilendirme gereksinimi ekleniyor
+
+app.MapControllers();
 
 app.Run();
