@@ -36,38 +36,44 @@ public sealed class AuthController(
             }
         };
 
-        string stringData = JsonSerializer.Serialize(data);
-        var content = new StringContent(stringData, Encoding.UTF8, "application/json");
+        //string stringData = JsonSerializer.Serialize(data);
+        //var content = new StringContent(stringData, Encoding.UTF8, "application/json");
 
-        HttpClient httpClient = new();
+        //HttpClient httpClient = new();
 
-        string token = await keycloakService.GetAccessToken();
+        //string token = await keycloakService.GetAccessToken();
 
         //httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-        var message = await httpClient.PostAsync(endpoint, content, cancellationToken);
+        //var message = await httpClient.PostAsync(endpoint, content, cancellationToken);
 
-        if (!message.IsSuccessStatusCode)
-        {
-            var response = await message.Content.ReadAsStringAsync();
+        //if (!message.IsSuccessStatusCode)
+        //{
+        //    var response = await message.Content.ReadAsStringAsync();
 
-            if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                var errorResultForUnauthorized = JsonSerializer.Deserialize<ErrorResponseDto>(response);
+        //    if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        //    {
+        //        var errorResultForUnauthorized = JsonSerializer.Deserialize<ErrorResponseDto>(response);
 
-                return Unauthorized(new { ErrorMessage = errorResultForUnauthorized!.ErrorDescription });
-            }
-            else 
-            {
-                var errorResultForOthers = JsonSerializer.Deserialize<BadRequestErrorResponseDto>(response);
+        //        return Unauthorized(new { ErrorMessage = errorResultForUnauthorized!.ErrorDescription });
+        //    }
+        //    else 
+        //    {
+        //        var errorResultForOthers = JsonSerializer.Deserialize<BadRequestErrorResponseDto>(response);
 
-                return BadRequest(new { ErrorMessage = errorResultForOthers!.ErrorMessage });
-            }
+        //        return BadRequest(new { ErrorMessage = errorResultForOthers!.ErrorMessage });
+        //    }
 
             
-        }
+        //}
 
-        return Ok(new { Message = "User was created successfully." });
+        //return Ok(new { Message = "User was created successfully." });
 
+        var result = await keycloakService.PostAsync<string>(endpoint, data, true, cancellationToken);
+
+        if (result.IsSuccess)
+            return Ok(Result<string>.Success(default!, "User was created successfully."));
+        else
+            return StatusCode(result.StatusCode, result);
     }
 }
