@@ -3,6 +3,7 @@ using KeycloakWebAPI.Services;
 using Keycloak.AuthServices.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using Keycloak.AuthServices.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +43,21 @@ builder.Services.AddScoped<KeycloakService>();
 builder.Services.AddControllers();
 
 builder.Services.AddKeycloakWebApiAuthentication(builder.Configuration);
-builder.Services.AddAuthorization();
+
+/*
+Clients > myclient > Roles > Create role > UserGetAll
+
+Users > myuser > Role mapping > Assign role > UserGetAll
+
+Yukarýdaki ayarlarý yapmazsanýz 403 hatasý alýrsýnýz! 
+*/
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("users", builder =>
+    {
+        builder.RequireResourceRoles("UserGetAll");
+    });
+}).AddKeycloakAuthorization(builder.Configuration);
 
 var app = builder.Build();
 

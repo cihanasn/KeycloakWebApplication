@@ -136,4 +136,43 @@ public sealed class KeycloakService(
 
         return Result<T>.Success(obj!);
     }
+
+    public async Task<Result<T>> GetAsync<T>(string endpoint, bool isTokenRequired = false, CancellationToken cancellationToken = default)
+    {
+        HttpClient httpClient = new();
+
+        if (isTokenRequired)
+        {
+            string token = await GetAccessToken();
+
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+        }
+
+        var message = await httpClient.GetAsync(endpoint, cancellationToken);
+
+        var response = await message.Content.ReadAsStringAsync();
+
+        if (!message.IsSuccessStatusCode)
+        {
+            if (message.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var errorResultForUnauthorized = JsonSerializer.Deserialize<ErrorResponseDto>(response);
+                return Result<T>.Failure(errorResultForUnauthorized!.ErrorDescription, null, (int)message.StatusCode);
+            }
+            else
+            {
+                var errorResultForOthers = JsonSerializer.Deserialize<BadRequestErrorResponseDto>(response);
+                return Result<T>.Failure(errorResultForOthers!.ErrorMessage, null, (int)message.StatusCode);
+            }
+        }
+
+        if (message.StatusCode == HttpStatusCode.Created || message.StatusCode == HttpStatusCode.NoContent)
+        {
+            return Result<T>.Success(default!);
+        }
+
+        var obj = JsonSerializer.Deserialize<T>(response);
+
+        return Result<T>.Success(obj!);
+    }
 }
