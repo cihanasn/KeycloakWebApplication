@@ -76,4 +76,29 @@ public sealed class AuthController(
         else
             return StatusCode(result.StatusCode, result);
     }
+
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login(LoginDto request, CancellationToken cancellationToken = default)
+    {
+        string endpoint = $"{options.Value.HostName}/realms/{options.Value.Realm}/protocol/openid-connect/token";
+
+        List<KeyValuePair<string, string>> data = new();
+
+        KeyValuePair<string, string> grantType = new("grant_type", "password");
+        KeyValuePair<string, string> clientId = new("client_id", options.Value.ClientId);
+        KeyValuePair<string, string> clientSecret = new("client_secret", options.Value.ClientSecret);
+        KeyValuePair<string, string> username = new("username", request.Username);
+        KeyValuePair<string, string> password = new("password", request.Password);
+
+        data.Add(grantType);
+        data.Add(clientId);
+        data.Add(clientSecret);
+        data.Add(username);
+        data.Add(password);
+
+        var result = await keycloakService.PostAsyncForFormUrlEncodedContent<object>(endpoint, data, false, cancellationToken);
+        
+        return StatusCode(result.StatusCode, result);
+    }
+
 }
